@@ -60,6 +60,7 @@ pub fn cli() -> App {
 }
 
 pub fn exec(config: &mut Config, args: &ArgMatches<'_>) -> CliResult {
+    println!("exec:+");
     let ws = args.workspace(config)?;
 
     let mut compile_opts = args.compile_options(
@@ -120,17 +121,22 @@ pub fn exec(config: &mut Config, args: &ArgMatches<'_>) -> CliResult {
         compile_opts,
     };
 
+    println!("exec: call run_tests");
     let err = ops::run_tests(&ws, &ops, &test_args)?;
+    println!("exec: retf run_tests err: {:#?}", err);
     match err {
         None => Ok(()),
         Some(err) => {
+            println!("exec rerun:1");
             let context = anyhow::format_err!("{}", err.hint(&ws, &ops.compile_opts));
+            println!("exec rerun:2");
             let e = match err.code {
                 // Don't show "process didn't exit successfully" for simple errors.
                 Some(i) if cargo_util::is_simple_exit_code(i) => CliError::new(context, i),
                 Some(i) => CliError::new(Error::from(err).context(context), i),
                 None => CliError::new(Error::from(err).context(context), 101),
             };
+            println!("exec rerun:3 e={:#?}", e);
             Err(e)
         }
     }

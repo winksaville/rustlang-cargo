@@ -1,5 +1,6 @@
 #![allow(unknown_lints)]
 
+use std::backtrace::Backtrace;
 use crate::core::{TargetKind, Workspace};
 use crate::ops::CompileOptions;
 use anyhow::Error;
@@ -220,6 +221,9 @@ impl CargoTestError {
                 ref name,
                 ref pkg_name,
             } => {
+                println!("hint:+");
+                let bt = Backtrace::capture();
+                println!("hint bt: kind: {:?} name: {} pkg_name: {} {:#?}", kind, name, pkg_name, bt);
                 let pkg_info = if opts.spec.needs_spec_flag(ws) {
                     format!("-p {} ", pkg_name)
                 } else {
